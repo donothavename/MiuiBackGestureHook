@@ -59,8 +59,12 @@ constexpr char kAppPublicPath[] =
 constexpr char kAppPublicName[] = "libhyper_os_app_public.so";
 constexpr char kBroadcastPrivatePath[] =
         "/system_ext/lib64/libhyper_os_broadcast_private.dylib.so";
-constexpr uintptr_t kBroadcastIntentWithFeatureGotOffset = 0x1d1c0u;
-constexpr uintptr_t kBroadcastIntentWithFeatureSymbolOffset = 0x1a7ccu;
+uintptr_t kBroadcastIntentWithFeatureGotOffset = 0u;
+constexpr uintptr_t kBroadcastIntentWithFeatureGotOffsetOS3 = 0x1d1c0u;
+constexpr uintptr_t kBroadcastIntentWithFeatureGotOffsetOS4 = 0x14ed0u;
+uintptr_t kBroadcastIntentWithFeatureSymbolOffset = 0u;
+constexpr uintptr_t kBroadcastIntentWithFeatureSymbolOffsetOS3 = 0x1a7ccu;
+constexpr uintptr_t kBroadcastIntentWithFeatureSymbolOffsetOS4 = 0x10d74u;
 const char* kBroadcastReceiverOnReceiveSymbol = nullptr;
 constexpr char kBroadcastReceiverOnReceiveSymbolOS3[] =
         "_RNvMs3_NtNtCsamj2hZJmyn0_26hyper_os_broadcast_private13dyn_"
@@ -642,12 +646,16 @@ bool ValidateElfBuildId(const char* path, const uint8_t* expected,
 bool ValidateSpawnerBuildId() {
     if (ValidateElfBuildId(kSpawnerPath, kExpectedSpawnerBuildIdOS3,
                               sizeof(kExpectedSpawnerBuildIdOS3))) {
+        kBroadcastIntentWithFeatureGotOffset = kBroadcastIntentWithFeatureGotOffsetOS3;
+        kBroadcastIntentWithFeatureSymbolOffset = kBroadcastIntentWithFeatureSymbolOffsetOS3;
         kBroadcastReceiverOnReceiveSymbol = kBroadcastReceiverOnReceiveSymbolOS3;
         kBroadcastIntentWithFeatureSymbol = kBroadcastIntentWithFeatureSymbolOS3;
         return true;
     };
     if (ValidateElfBuildId(kSpawnerPath, kExpectedSpawnerBuildIdOS4,
                               sizeof(kExpectedSpawnerBuildIdOS4))) {
+        kBroadcastIntentWithFeatureGotOffset = kBroadcastIntentWithFeatureGotOffsetOS4;
+        kBroadcastIntentWithFeatureSymbolOffset = kBroadcastIntentWithFeatureSymbolOffsetOS4;
         kBroadcastReceiverOnReceiveSymbol = kBroadcastReceiverOnReceiveSymbolOS4;
         kBroadcastIntentWithFeatureSymbol = kBroadcastIntentWithFeatureSymbolOS4;
         return true;
