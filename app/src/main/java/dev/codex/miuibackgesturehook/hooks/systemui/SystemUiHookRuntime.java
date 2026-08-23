@@ -249,12 +249,12 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
         return requireSystemUiPlatformImpl().defaultTransitionOpenCaptureHookId();
     }
 
-    protected String systemUiInputArbiterStateAction() {
+    protected String systemUiInputArbiterStateAction(Context context) {
         SystemUiPlatformImpl implementation = systemUiPlatformImpl;
         return implementation == null
                 ? MODULE_SYSTEMUI_INPUT_ARBITER_STATE
                 : implementation.systemUiInputArbiterStateAction(
-                        MODULE_SYSTEMUI_INPUT_ARBITER_STATE);
+                        isRustHome(context) ? "com.android.systemui.fsgesture" : MODULE_SYSTEMUI_INPUT_ARBITER_STATE);
     }
 
     protected void hookPlatformBackAnimationStatusBarReset(ClassLoader classLoader) {
@@ -6520,7 +6520,7 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
         sendModuleRuntimeStatusReply(context, nonce, false, ready,
                 "systemUiResponse", null);
         try {
-            Intent nativeQuery = new Intent(isRustHome(context) ? "com.android.systemui.fsgesture" : MODULE_SYSTEMUI_INPUT_ARBITER_STATE)
+            Intent nativeQuery = new Intent(systemUiInputArbiterStateAction(context))
                     .setPackage(MIUI_HOME)
                     .putExtra(EXTRA_STATUS_QUERY, true)
                     .putExtra(EXTRA_STATUS_NONCE, nonce)

@@ -3249,7 +3249,7 @@ public abstract class MiuiHomeHookRuntime extends MiuiHomeReturnHomeRuntime {
         try {
             boolean contextualSearchEnabled =
                     isContextualSearchLongPressRuntimeEnabled();
-            Intent stateIntent = new Intent(systemUiInputArbiterStateAction());
+            Intent stateIntent = new Intent(systemUiInputArbiterStateAction(context));
             stateIntent.setPackage(MIUI_HOME);
             stateIntent.putExtra(EXTRA_INPUT_ARBITER_READY, ready);
             stateIntent.putExtra(EXTRA_INPUT_ARBITER_GENERATION,
