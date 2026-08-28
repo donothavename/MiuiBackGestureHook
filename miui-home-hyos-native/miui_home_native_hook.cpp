@@ -92,16 +92,23 @@ constexpr char kSpawnerPath[] = "/system_ext/bin/hyos_spawner";
 constexpr char kHyperRuntimeName[] = "libhyper_os_flutter.so";
 constexpr char kBroadcastPrivatePath[] =
         "/system_ext/lib64/libhyper_os_broadcast_private.dylib.so";
-constexpr uintptr_t kBroadcastIntentWithFeatureGotOffset = 0x14ed0u;
-constexpr uintptr_t kBroadcastIntentWithFeatureSymbolOffset = 0x10d74u;
+constexpr uintptr_t kBroadcastIntentWithFeatureGotOffset = 0x1d1c0u; //0x14ed0u;
+constexpr uintptr_t kBroadcastIntentWithFeatureSymbolOffset = 0x1a7ccu; //0x10d74u;
 constexpr char kBroadcastReceiverOnReceiveSymbol[] =
-        "_RNvMs3_NtNtCslLvADlVgqlk_26hyper_os_broadcast_private13dyn_"
+        // "_RNvMs3_NtNtCslLvADlVgqlk_26hyper_os_broadcast_private13dyn_"
+        // "broadcast23BroadcastReceiver_traitINtB5_20BroadcastReceiver_TOINtNtNtNt"
+        // "Cs9Neji4M1weT_10abi_stable9std_types5boxed7private4RBoxuEE10on_receiveB9_";
+        "_RNvMs3_NtNtCsamj2hZJmyn0_26hyper_os_broadcast_private13dyn_"
         "broadcast23BroadcastReceiver_traitINtB5_20BroadcastReceiver_TOINtNtNtNt"
-        "Cs9Neji4M1weT_10abi_stable9std_types5boxed7private4RBoxuEE10on_receiveB9_";
+        "Csc8ZqGyuZgC9_10abi_stable9std_types5boxed7private4RBoxuEE10on_receiveB9_";
 constexpr char kBroadcastSendSymbol[] =
-        "_RNvNtNtCslLvADlVgqlk_26hyper_os_broadcast_private5scene5impls14send_broadcast";
+        // "_RNvNtNtCslLvADlVgqlk_26hyper_os_broadcast_private5scene5impls14send_broadcast";
+        "_RNvNtNtCsamj2hZJmyn0_26hyper_os_broadcast_private5scene5impls14send_broadcast";
 constexpr char kBroadcastIntentWithFeatureSymbol[] =
-        "_RNvXs_NtCslLvADlVgqlk_26hyper_os_broadcast_private8sys_implNtB4_31"
+        // "_RNvXs_NtCslLvADlVgqlk_26hyper_os_broadcast_private8sys_implNtB4_31"
+        // "ActivityManagerServiceProxyImplNtB4_27ActivityManagerServiceProxy26"
+        // "broadcastIntentWithFeature";
+        "_RNvXs_NtCsamj2hZJmyn0_26hyper_os_broadcast_private8sys_implNtB4_31"
         "ActivityManagerServiceProxyImplNtB4_27ActivityManagerServiceProxy26"
         "broadcastIntentWithFeature";
 constexpr char kLauncherProcessName[] = "com.miui.home";
@@ -640,6 +647,8 @@ constexpr char kArbiterQueryAction[] =
         "dev.codex.miuibackgesturehook.action.MIUI_HOME_INPUT_ARBITER_QUERY";
 constexpr char kContextualSearchTriggeredAction[] =
         "dev.codex.miuibackgesturehook.action.CONTEXTUAL_SEARCH_TRIGGERED";
+constexpr char kContextualSearchServiceAction[] =
+        "dev.codex.miuibackgesturehook.action.CONTEXTUAL_SEARCH_SERVICE";
 constexpr char kRuntimeStatusResponseAction[] =
         "dev.codex.miuibackgesturehook.action.RUNTIME_STATUS_REPLY";
 constexpr char kRuntimeStatusQueryExtra[] = "status_query";
@@ -2866,6 +2875,10 @@ void HookContextualLongPressHandler(void* closure, uint32_t trigger_mode) {
             kContextualSearchTriggeredAction, nullptr)) {
         Log(ANDROID_LOG_WARN,
             "contextual-search trigger haptic signal could not reach SystemUI");
+    } else if (!SendNativeBroadcast(
+            kContextualSearchServiceAction, nullptr)) {
+        Log(ANDROID_LOG_WARN,
+            "contextual-search service signal could not reach SystemUI");
     }
     if (!CleanupContextualLongPressClosure(closure)) {
         // This should be unreachable after the validation above.  Keep the
