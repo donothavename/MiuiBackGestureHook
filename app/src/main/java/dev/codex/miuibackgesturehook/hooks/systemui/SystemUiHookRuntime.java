@@ -255,12 +255,12 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
         return requireSystemUiPlatformImpl().defaultTransitionOpenCaptureHookId();
     }
 
-    protected String systemUiInputArbiterStateAction() {
+    protected String systemUiInputArbiterStateAction(Context context) {
         SystemUiPlatformImpl implementation = systemUiPlatformImpl;
         return implementation == null
                 ? MODULE_SYSTEMUI_INPUT_ARBITER_STATE
                 : implementation.systemUiInputArbiterStateAction(
-                        MODULE_SYSTEMUI_INPUT_ARBITER_STATE);
+                        isRustHome(context) ? "com.android.systemui.fsgesture" : MODULE_SYSTEMUI_INPUT_ARBITER_STATE);
     }
 
     protected void hookPlatformBackAnimationStatusBarReset(ClassLoader classLoader) {
@@ -6505,6 +6505,23 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
                     playContextualSearchHaptic(receiverContext);
                     return;
                 }
+                if (MODULE_CONTEXTUAL_SEARCH_SERVICE.equals(action)) {
+                    int senderUid = getSentFromUid();
+                    String senderPackage = getSentFromPackage();
+                    if (!isTrustedMiuiHomeBroadcastSender(
+                            receiverContext, senderUid, senderPackage)) {
+                        moduleLog(Log.WARN, TAG,
+                                "Rejected untrusted contextual-search service"
+                                        + ", uid=" + senderUid
+                                        + ", package=" + senderPackage);
+                        return;
+                    }
+                    if (!invokeContextualSearchService()) {
+                        return;
+                    }
+                    playContextualSearchHaptic(receiverContext);
+                    return;
+                }
                 if (!MODULE_MIUI_OVERVIEW_STATE_CHANGE.equals(action)
                         && !MODULE_MIUI_HOME_INPUT_ARBITER_QUERY.equals(action)) {
                     return;
@@ -6725,6 +6742,7 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
             IntentFilter filter = new IntentFilter(MODULE_MIUI_OVERVIEW_STATE_CHANGE);
             filter.addAction(MODULE_MIUI_HOME_INPUT_ARBITER_QUERY);
             filter.addAction(MODULE_CONTEXTUAL_SEARCH_TRIGGERED);
+            filter.addAction(MODULE_CONTEXTUAL_SEARCH_SERVICE);
             filter.addAction(MODULE_RUNTIME_STATUS_QUERY);
             filter.addAction(MODULE_RUNTIME_STATUS_REPLY);
             appContext.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
@@ -6850,7 +6868,7 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
         sendModuleRuntimeStatusReply(context, nonce, false, ready,
                 "systemUiResponse", null);
         try {
-            Intent nativeQuery = new Intent(systemUiInputArbiterStateAction())
+            Intent nativeQuery = new Intent(systemUiInputArbiterStateAction(context))
                     .setPackage(MIUI_HOME)
                     .putExtra(EXTRA_STATUS_QUERY, true)
                     .putExtra(EXTRA_STATUS_NONCE, nonce)
@@ -6909,7 +6927,7 @@ public abstract class SystemUiHookRuntime extends SystemUiInputRuntime {
             return;
         }
         try {
-            boolean legacyMode = Build.VERSION.SDK_INT < ANDROID_17_API_LEVEL;
+            boolean legacyMode = !isRustHome(context);
             boolean legacyReady = nativeReply != null && nativeReply.getBooleanExtra(
                     EXTRA_STATUS_LEGACY_READY, false);
             boolean profileResolved = nativeReply != null && nativeReply.getBooleanExtra(
